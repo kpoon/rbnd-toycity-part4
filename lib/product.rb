@@ -23,13 +23,12 @@ class Product < Udacidata
     # If it exists, increment and use this value
     # Otherwise, use 0 as starting ID number
     def get_last_id
-      file = File.dirname(__FILE__) + "/../data/data.csv"
-      last_id = File.exist?(file) ? CSV.read(file).last[0].to_i + 1 : nil
+      path = File.dirname(__FILE__) + "/../data/data.csv"
+      last_id = File.exist?(path) ? CSV.read(path).last[0].to_i + 1 : nil
       @@count_class_instances = last_id || 0
     end
 
     def auto_increment
       @@count_class_instances += 1
     end
-
 end
