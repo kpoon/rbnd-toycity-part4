@@ -81,11 +81,11 @@ puts "FIND PRODUCT 1"
 puts "--------------"
 print Product.find(1)
 
-# puts
-# puts "-----------------"
-# puts "DESTROY PRODUCT 3"
-# puts "-----------------"
-# print Product.destroy(3)
+puts
+puts "-----------------"
+puts "DESTROY PRODUCT 3"
+puts "-----------------"
+print Product.destroy(3)
 
 puts
 puts "-------------------------------"
