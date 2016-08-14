@@ -46,7 +46,6 @@ module Analyzable
 	  		report_string += "   - #{key}: #{value} \n"
 		end 
 
-		puts report_string
 		return report_string
 	end
 
