@@ -63,6 +63,8 @@ class Udacidata
   	# product in the database. 
   	# Product.last
   	# #=> #<Product:0x007f807da70508>
+  	#   Product.last(2)
+    #=> [#<Product:0x007f93cb2e8798 @id=98, @brand="Nintendo", @name="Fantastic Aluminum Shoes", @price="43.05">, 
   	def self.last(n = 1)
   		if n==1
 			self.all.last(1)[0]
@@ -71,81 +73,104 @@ class Udacidata
 		end	
   	end
 
-#   Product.last(n) will return an array of Product objects for the last n 
-#   products in the database.
-#   Product.last(2)
-#   #=> [#<Product:0x007f93cb2e8798 @id=98, @brand="Nintendo", @name="Fantastic Aluminum Shoes", @price="43.05">, 
-# #<Product:0x007f93cb2e86f8 @id=99, @brand="Crayola", @name="Awesome Leather Chair", @price="24.73">]
-  def last(n)
+  	# Product.find should return a Product object for the product with 
+	# a given product id.
+	# Product.find(1) 
+	# #=> #<Product:0x007fdd029987c0>
+	# raise ProductNotFoundError
+	# when the product ID can’t be found
+	def self.find(id)
+		filtered_list = self.all.select{|item| item.id == id}
+    	if filtered_list.length == 0
+     		raise UdacidataErrors::ProductNotFoundError
+    	else
+      		return filtered_list[0]
+    	end   
+	end
+
+	# Product.destroy should delete the product corresponding to the given id from 
+	# the database, and return a Product object for the product that was deleted.
+	# Remove the product with id 7 from the database
+	# Product.destroy(7)
+	# #=> #<Product:0x007f8a421a0d50>
+	# raise ProductNotFoundError
+	# when the product can’t be destroyed because the given ID does not exist
+	def self.destroy(id)
+		product_records = self.all
+
+		# need to find index of the product we are trying to delete
+		product_index = nil
+		
+		# find indexes of id we are trying to destory
+		product_records.each_with_index do |record, position|
+      		if record.id == id
+      			product_index = position 
+      		end
+    	end
+
+    	# if no index is find, then return error
+    	if product_index == nil
+     		raise UdacidataErrors::ProductNotFoundError
+     	end
+
+     	# need to keep track of the deleted record
+     	deleted_item = product_records.delete_at(product_index)
+     	 
+     	# rewrite csv file without deleted record
+     	CSV.open(@@data_path, "w") do |csv|
+  			csv << ["id", "brand", "product", "price"]
+  			product_records.each do |record|
+	      		csv << [record.id, record.brand, record.name, record.price]	
+    		end
+  		end		
+  		
+		return deleted_item   
+     end 
+
+	# The methods Product.find_by_brand and Product.find_by_name should return a Product 
+	# object for the first product in the database that has a matching brand or 
+	# product name. Note: Use metaprogramming techniques to define these methods. 
+	# There are hints to help you get started in find_by.rb.
+	# Product.find_by_brand("Lego")
+	# #=> #<Product:0x007f97e218cd70>
+	create_finder_methods :brand, :name
+	
+	# Product.where should return an array of Product objects that match a given 
+	# brand or product name.
+	# Product.where(brand: "Lego") 
+	# #=> [#<Product:0x007fa16227c300 @id=5, @brand="Lego", @name="Sleek Plastic Keyboard", @price="22.28">, 
+	# #<Product:0x007fa16227c260 @id=6, @brand="Lego", @name="Rustic Paper Hat", @price="85.26">]
+	def self.where(n)
+		# get the first part of hash
+		search_type = n.keys.first
+		# get value
+		search_value = n.values_at(n.keys.first)
+		
+		filtered_list = self.all.select{|item| item.send(search_type) == search_value}
+		return filtered_list
+	end
+
+	# product_instance.update should change the information for a given Product 
+	# object, and save the new data to the database.
+	# # Get product with id 5, change its brand to "Udacity"
+	# Product.find(5).update(brand: "Udacity")
+	# #=> #<Product:0x007fbff1a44558>
+    def update(options={})
+    	# get product with id #n# 	
+    	selected_product = Product.find(id) 
+	
+    	# update record with optional parameters
+    	# used parameters pass for updated record.  Else used the original value
+    	updated_brand = options[:brand] ? options[:brand] : selected_product.brand
+    	updated_name = options[:name] ? options[:name] : selected_product.name
+    	updated_price = options[:price] ? options[:price] : selected_product.price
+
+    	# delete record 
+    	Product.destroy(id)
+
+    	updated_product = Product.create(id: selected_product.id, brand: updated_brand, name: updated_name, price: updated_price)
+    	return updated_product
   end
-
-# Product.destroy should delete the product corresponding to the given id from 
-# the database, and return a Product object for the product that was deleted.
-# # Remove the product with id 7 from the database
-# Product.destroy(7)
-# #=> #<Product:0x007f8a421a0d50>
-	def destroy
-	end
-
-# product_instance.update should change the information for a given Product 
-# object, and save the new data to the database.
-# # Get product with id 5, change its brand to "Udacity"
-# Product.find(5).update(brand: "Udacity")
-# #=> #<Product:0x007fbff1a44558>
-    def update
-    end
-
-# Product.find should return a Product object for the product with 
-# a given product id.
-# Product.find(1) 
-# #=> #<Product:0x007fdd029987c0>
-# raise ProductNotFoundError
-# when the product ID can’t be found
-def find(n)
-end
-
-# The methods Product.find_by_brand and Product.find_by_name should return a Product 
-# object for the first product in the database that has a matching brand or 
-# product name. Note: Use metaprogramming techniques to define these methods. 
-# There are hints to help you get started in find_by.rb.
-# Product.find_by_brand("Lego")
-# #=> #<Product:0x007f97e218cd70>
-def find_by_brand()
-end
-
-# Product.find_by_name("Awesome Toy")
-# #=> #<Product:0x007f97e21790b8>
-# Note: Use metaprogramming techniques to define these methods. 
-# There are hints to help you get started in find_by.rb.
-	def find_by_name()
-	end
-
-# Product.where should return an array of Product objects that match a given 
-# brand or product name.
-# Product.where(brand: "Lego") 
-# #=> [#<Product:0x007fa16227c300 @id=5, @brand="Lego", @name="Sleek Plastic Keyboard", @price="22.28">, 
-# #<Product:0x007fa16227c260 @id=6, @brand="Lego", @name="Rustic Paper Hat", @price="85.26">]
-	def where
-	end
-
-
-# raise ProductNotFoundError
-# when the product can’t be destroyed because the given ID does not exist
-# should delete the product corresponding to the given id from the database, and 
-# return a Product object for the product that was deleted.
-# # Remove the product with id 7 from the database
-# Product.destroy(7)
-# #=> #<Product:0x007f8a421a0d50>
-	def destroy(n)
-	end
-
-# product_instance.update should change the information for a given Product 
-# object, and save the new data to the database.
-# # Get product with id 5, change its brand to "Udacity"
-# Product.find(5).update(brand: "Udacity")
-# #=> #<Product:0x007fbff1a44558>
-	# def product_instance.update
-	# end
 end
 
 
