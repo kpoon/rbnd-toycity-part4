@@ -141,13 +141,10 @@ class Udacidata
 	# #=> [#<Product:0x007fa16227c300 @id=5, @brand="Lego", @name="Sleek Plastic Keyboard", @price="22.28">, 
 	# #<Product:0x007fa16227c260 @id=6, @brand="Lego", @name="Rustic Paper Hat", @price="85.26">]
 	def self.where(n)
-		# get the first part of hash
-		search_type = n.keys.first
-		# get value
-		search_value = n.values_at(n.keys.first)
-		
-		filtered_list = self.all.select{|item| item.send(search_type) == search_value}
-		return filtered_list
+		data = self.all
+			
+		filtered_list = data.select{|item| item.send(n.keys.first) == n.values.first}
+		return filtered_list		
 	end
 
 	# product_instance.update should change the information for a given Product 
